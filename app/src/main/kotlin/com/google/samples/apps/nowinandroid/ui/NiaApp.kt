@@ -1,148 +1,32 @@
-/*
- * Copyright 2022 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-package com.google.samples.apps.nowinandroid.ui
-
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.consumeWindowInsets
-import androidx.compose.foundation.layout.exclude
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration.Indefinite
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
-import androidx.compose.material3.adaptive.WindowAdaptiveInfo
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
-import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.testTagsAsResourceId
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation3.runtime.NavKey
-import androidx.navigation3.runtime.entryProvider
-import androidx.navigation3.ui.NavDisplay
-import com.google.samples.apps.nowinandroid.R
-import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaBackground
-import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaGradientBackground
-import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaNavigationSuiteScaffold
-import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaTopAppBar
-import com.google.samples.apps.nowinandroid.core.designsystem.icon.NiaIcons
-import com.google.samples.apps.nowinandroid.core.designsystem.theme.GradientColors
-import com.google.samples.apps.nowinandroid.core.designsystem.theme.LocalGradientColors
-import com.google.samples.apps.nowinandroid.core.navigation.Navigator
-import com.google.samples.apps.nowinandroid.core.navigation.toEntries
-import com.google.samples.apps.nowinandroid.feature.bookmarks.impl.navigation.LocalSnackbarHostState
-import com.google.samples.apps.nowinandroid.feature.bookmarks.impl.navigation.bookmarksEntry
-import com.google.samples.apps.nowinandroid.feature.foryou.api.navigation.ForYouNavKey
-import com.google.samples.apps.nowinandroid.feature.foryou.impl.navigation.forYouEntry
-import com.google.samples.apps.nowinandroid.feature.interests.impl.navigation.interestsEntry
-import com.google.samples.apps.nowinandroid.feature.search.api.navigation.SearchNavKey
-import com.google.samples.apps.nowinandroid.feature.search.impl.navigation.searchEntry
-import com.google.samples.apps.nowinandroid.feature.settings.impl.SettingsDialog
-import com.google.samples.apps.nowinandroid.feature.topic.impl.navigation.topicEntry
-import com.google.samples.apps.nowinandroid.navigation.TOP_LEVEL_NAV_ITEMS
-import com.google.samples.apps.nowinandroid.feature.settings.impl.R as settingsR
-
 @Composable
-fun NiaApp(
-    appState: NiaAppState,
-    modifier: Modifier = Modifier,
-    windowAdaptiveInfo: WindowAdaptiveInfo = currentWindowAdaptiveInfo(),
-) {
-    val shouldShowGradientBackground = appState.navigationState.currentTopLevelKey == ForYouNavKey
-    var showSettingsDialog by rememberSaveable { mutableStateOf(false) }
-
-    NiaBackground(modifier = modifier) {
-        NiaGradientBackground(
-            gradientColors = if (shouldShowGradientBackground) {
-                LocalGradientColors.current
-            } else {
-                GradientColors()
-            },
+fun NiaApp() {
+    MaterialTheme {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp)
         ) {
-            val snackbarHostState = remember { SnackbarHostState() }
 
-            val isOffline by appState.isOffline.collectAsStateWithLifecycle()
+            Text(
+                text = "ORBIT",
+                style = MaterialTheme.typography.headlineLarge
+            )
 
-            // If user is not connected to the internet show a snack bar to inform them.
-            val notConnectedMessage = stringResource(R.string.not_connected)
-            LaunchedEffect(isOffline) {
-                if (isOffline) {
-                    snackbarHostState.showSnackbar(
-                        message = notConnectedMessage,
-                        duration = Indefinite,
-                    )
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text("System online")
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Card {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("Mission")
+                    Text("Execute one focused task today.")
                 }
-            }
-            CompositionLocalProvider(LocalSnackbarHostState provides snackbarHostState) {
-                NiaApp(
-                    appState = appState,
-
-                    // TODO: Settings should be a dialog screen
-                    showSettingsDialog = showSettingsDialog,
-                    onSettingsDismissed = { showSettingsDialog = false },
-                    onTopAppBarActionClick = { showSettingsDialog = true },
-                    windowAdaptiveInfo = windowAdaptiveInfo,
-                )
             }
         }
     }
-}
-
-@Composable
-@OptIn(
-    ExperimentalMaterial3Api::class,
-    ExperimentalComposeUiApi::class,
-    ExperimentalMaterial3AdaptiveApi::class,
-)
-internal fun NiaApp(
-    appState: NiaAppState,
-    showSettingsDialog: Boolean,
-    onSettingsDismissed: () -> Unit,
-    onTopAppBarActionClick: () -> Unit,
+}    onTopAppBarActionClick: () -> Unit,
     modifier: Modifier = Modifier,
     windowAdaptiveInfo: WindowAdaptiveInfo = currentWindowAdaptiveInfo(),
 ) {
